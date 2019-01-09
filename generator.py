@@ -25,10 +25,11 @@ def createWordList():
     for file in os.listdir(directory):
         try:
             filename = os.fsdecode(file)
-            if filename == 'generator.py' or filename == 'the-lion-king.txt':
+            if filename == 'generator.py' or filename == 'the-lion-king.txt' or filename == '.git':
                 continue
             else:
                 # loop over each for and put into dictionary
+                print(filename)
                 currentScript = open(filename, "r")
                 for sentence in currentScript:
                     sentence = sentence.split(' ')
@@ -65,7 +66,9 @@ def generateWordMatrix(wordsList):
     #have 2 pointers: 1 -> current word, 2-> next word
     curr = ''
     next = ''
-    x = np.zeros((4742,4742))
+    size = len(wordsList)
+    x = np.zeros((size,size))
+    temp_script = []
     #loop through files
     directory = os.fsencode(".")
     for file in os.listdir(directory):
@@ -75,21 +78,32 @@ def generateWordMatrix(wordsList):
                 continue
             else:
                 # loop over each for and put into dictionary
+                print(filename)
                 currentScript = open(filename, "r")
                 for sentence in currentScript:
                     if len(sentence) == 0:
                         continue
                     sentence = sentence.split(' ')
                     for word in sentence:
-                        word = re.sub("[^a-zA-Z']", '', word)
-                        word = word.rstrip()
+                        if word == '' or word == '\\n':
+                            continue
+                        else:
+                            word = re.sub("[^a-zA-Z']", '', word)
+                            word = word.rstrip()
+                            temp_script.append(word)
+
+            print(temp_script)
+
+
+
+
 
             break
         except UnicodeDecodeError:
             print("File couldn't be read because of encoding error")
 
 
-
+    #return x
 
 
 
