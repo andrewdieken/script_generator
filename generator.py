@@ -18,8 +18,9 @@ import random
 
 
 def createWordList():
-    uniqueWordList= []
+    #uniqueWordList= []
     wordDict = {}
+    i = 0
 
     directory = os.fsencode(".")
     for file in os.listdir(directory):
@@ -36,17 +37,16 @@ def createWordList():
                     for word in sentence:
                         word = re.sub("[^a-zA-Z']", '', word)
                         word = word.rstrip()
-                        if word not in uniqueWordList:
-                            uniqueWordList.append(word)
-                            wordDict[word] = 1
-                        else:
-                            wordDict[word] += 1
-            break
+                        if word not in wordDict:
+                            #uniqueWordList.append(word)
+                            wordDict[word] = i
+                            i += 1
+            #break
         except UnicodeDecodeError:
             print("File couldn't be read because of encoding error")
 
 
-    return uniqueWordList, wordDict
+    return wordDict
 
 #=======================================================
 
@@ -61,24 +61,23 @@ def generateStartingWord(list):
  # matrix 1 = track current and next words
  # matrix 2 = transitionMatrix to track probabilities
 
-def generateWordMatrix(wordsList):
+def generateWordMatrix(wordsDict):
     #go through the files one by one
     #have 2 pointers: 1 -> current word, 2-> next word
     curr = ''
     next = ''
-    size = len(wordsList)
+    size = len(wordsDict)
     x = np.zeros((size,size))
-    temp_script = []
     #loop through files
     directory = os.fsencode(".")
     for file in os.listdir(directory):
+        temp_script = []
         try:
             filename = os.fsdecode(file)
-            if filename == 'generator.py' or filename == 'the-lion-king.txt':
+            if filename == 'generator.py' or filename == 'the-lion-king.txt' or filename == '.git':
                 continue
             else:
                 # loop over each for and put into dictionary
-                print(filename)
                 currentScript = open(filename, "r")
                 for sentence in currentScript:
                     if len(sentence) == 0:
@@ -90,34 +89,42 @@ def generateWordMatrix(wordsList):
                         else:
                             word = re.sub("[^a-zA-Z']", '', word)
                             word = word.rstrip()
-                            temp_script.append(word)
+                            if word != '':
+                                temp_script.append(word)
 
-            print(temp_script)
+            for i in range(len(temp_script)):
+                if i < len(temp_script)-1:
+                    curr = temp_script[i]
+                    next = temp_script[i+1]
+                    #print('current word: {} | next word: {}'.format(curr, next))
+                    # Get indexs of words
+                    curr_index = wordDict[curr]
+                    next_index = wordDict[next]
+                    #update matrix
+                    x[curr_index][next_index] += 1
 
-
-
-
-
-            break
+            #break
         except UnicodeDecodeError:
             print("File couldn't be read because of encoding error")
 
 
-    #return x
+
+    return x
 
 
 
 
 if __name__ == "__main__":
-    uniqueWordList, wordDict = createWordList()
+    wordDict = createWordList()
+    #print(wordDict)
     #wordDict = createUniqueWordDict()
-    totalWords = len(uniqueWordList)
+    totalWords = len(wordDict)
 
-    startingWord = generateStartingWord(uniqueWordList)
+    #startingWord = generateStartingWord(uniqueWordList)
 
     #print(wordDict)
     print('Number of unique words: ', totalWords)
-    print(startingWord)
 
 
-    generateWordMatrix(uniqueWordList)
+    seen_matrix = generateWordMatrix(wordDict)
+    print(seen_matrix)
